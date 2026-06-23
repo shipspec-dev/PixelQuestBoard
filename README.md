@@ -80,4 +80,4 @@ Generated ShipSpec artifacts are included in:
 
 ShipSpec repo:
 
-https://github.com/ewent404/ShipSpec
+https://github.com/shipspec-dev/ShipSpec
