@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShipSpec Pixel Console</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap');
+    :root {
+      --bg: #11131f;
+      --panel: #1b2033;
+      --panel-2: #232944;
+      --grid: rgba(255,255,255,.06);
+      --text: #f8f4d8;
+      --muted: #aeb7d8;
+      --green: #67f58c;
+      --yellow: #ffd166;
+      --red: #ff5d73;
+      --blue: #64d2ff;
+      --line: #3c456c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Pixelify Sans', ui-monospace, monospace;
+      background:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        var(--bg);
+      background-size: 18px 18px;
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .shell { max-width: 1180px; margin: 0 auto; padding: 28px; }
+    header { display: flex; justify-content: space-between; gap: 18px; align-items: start; margin-bottom: 22px; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(30px, 5vw, 56px); line-height: .95; color: var(--green); text-shadow: 4px 4px 0 #000; }
+    h2 { font-size: 20px; margin-bottom: 14px; color: var(--blue); }
+    .slug { color: var(--muted); margin-top: 10px; font-size: 18px; }
+    .grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; }
+    .panel {
+      background: var(--panel);
+      border: 3px solid var(--line);
+      box-shadow: 8px 8px 0 #05060b;
+      padding: 18px;
+    }
+    .pipeline { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+    .stage {
+      min-height: 84px;
+      background: var(--panel-2);
+      border: 2px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stage strong { font-size: 15px; }
+    .chip { display: inline-block; padding: 5px 7px; border: 2px solid currentColor; font-size: 13px; }
+    .pass { color: var(--green); }
+    .warn { color: var(--yellow); }
+    .fail { color: var(--red); }
+    .commands, .files, .messages { display: grid; gap: 9px; }
+    .cmd, .row {
+      background: #11172a;
+      border: 2px solid var(--line);
+      padding: 10px;
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+    .cmd { color: var(--yellow); }
+    .messages .row b { color: var(--green); }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    .footer { margin-top: 18px; color: var(--muted); font-size: 15px; }
+    @media (max-width: 840px) {
+      header, .grid, .split { grid-template-columns: 1fr; display: grid; }
+      .pipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .shell { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <h1>ShipSpec Pixel Console</h1>
+        <p class="slug">Add quest completion and XP rewards / add-quest-completion-and-xp-rewards</p>
+      </div>
+      <div class="panel">
+        <h2>Quest Commands</h2>
+        <div class="commands">
+          <div class="cmd">gsd validate</div><div class="cmd">gsd verify --full</div><div class="cmd">gsd report</div><div class="cmd">gsd release</div><div class="cmd">gsd inbox</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Pipeline</h2>
+        <div class="pipeline">
+          <div class="stage"><strong>Spec</strong><span class="chip pass">PASS</span></div><div class="stage"><strong>Validate</strong><span class="chip pass">PASS</span></div><div class="stage"><strong>Verify</strong><span class="chip pass">PASS</span></div><div class="stage"><strong>Report</strong><span class="chip pass">PASS</span></div><div class="stage"><strong>Release</strong><span class="chip pass">PASS</span></div><div class="stage"><strong>Ready</strong><span class="chip pass">PASS</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Status</h2>
+        <div class="files">
+          <div class="row">Branch: unavailable</div>
+          <div class="row">Evidence: present</div>
+          <div class="row">Report: present</div>
+          <div class="row">Release: present</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="split">
+      <div class="panel">
+        <h2>Changed Files</h2>
+        <div class="files">
+          <div class="row">No Git changes detected.</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Agent Inbox</h2>
+        <div class="messages">
+          <div class="row"><b>system</b>: No agent messages yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer">Generated by ShipSpec. Static single-page dashboard. Refresh with <span class="cmd">gsd ui</span>.</p>
+  </main>
+</body>
+</html>
