@@ -1,14 +1,30 @@
 const starterQuests = [
-  { id: "gather-herbs", title: "Gather moonlit herbs", xp: 25 },
-  { id: "map-cave", title: "Map the crystal cave", xp: 40 },
-  { id: "repair-bridge", title: "Repair the river bridge", xp: 35 },
-  { id: "calm-sprite", title: "Calm the forest sprite", xp: 55 },
+  {
+    id: "gather-herbs",
+    title: "Gather moonlit herbs",
+    xp: 25,
+    priority: "normal",
+  },
+  { id: "map-cave", title: "Map the crystal cave", xp: 40, priority: "high" },
+  {
+    id: "repair-bridge",
+    title: "Repair the river bridge",
+    xp: 35,
+    priority: "normal",
+  },
+  {
+    id: "calm-sprite",
+    title: "Calm the forest sprite",
+    xp: 55,
+    priority: "urgent",
+  },
 ];
 
 const questList = document.querySelector("#quest-list");
 const totalXp = document.querySelector("#total-xp");
 const progressLabel = document.querySelector("#progress-label");
 const progressFill = document.querySelector("#progress-fill");
+const streakLabel = document.querySelector("#streak-label");
 const rankLabel = document.querySelector("#rank-label");
 const statusMessage = document.querySelector("#status-message");
 
@@ -27,12 +43,8 @@ async function init() {
 
     try {
       const result = board.completeQuest(button.dataset.questId);
-      const message =
-        result.xpAwarded === 0
-          ? `${result.quest.title} was already complete.`
-          : `${result.quest.title} complete. +${result.xpAwarded} XP claimed.`;
 
-      render(board, message);
+      render(board, formatCompletionMessage(result));
     } catch (error) {
       render(board, error.message);
     }
@@ -58,6 +70,7 @@ function render(board, message) {
 
   totalXp.textContent = board.getTotalXp();
   progressLabel.textContent = `${completedCount} of ${quests.length} quests complete`;
+  streakLabel.textContent = `Streak: ${board.getCurrentStreak()}`;
   progressFill.style.width = `${completionPercent}%`;
   rankLabel.textContent = `Rank: ${getRank(board.getTotalXp(), completedCount, quests.length)}`;
   statusMessage.textContent = message;
@@ -77,9 +90,18 @@ function createQuestElement(quest) {
 
   const meta = document.createElement("p");
   meta.className = "quest-meta";
-  meta.textContent = quest.completed
+  const xpText = quest.completed
     ? `${quest.xp} XP earned`
     : `${quest.xp} XP reward`;
+
+  const priority = document.createElement("span");
+  priority.className = `priority-label priority-label--${quest.priority}`;
+  priority.textContent = `${formatPriority(quest.priority)} priority`;
+
+  const xpLabel = document.createElement("span");
+  xpLabel.textContent = xpText;
+
+  meta.append(priority, xpLabel);
 
   const button = document.createElement("button");
   button.className = "quest-action";
@@ -92,6 +114,22 @@ function createQuestElement(quest) {
   card.append(content, button);
 
   return card;
+}
+
+function formatCompletionMessage(result) {
+  if (result.xpAwarded === 0) {
+    return `${result.quest.title} was already complete.`;
+  }
+
+  if (result.streakBonusAwarded > 0) {
+    return `${result.quest.title} complete. +${result.xpAwarded} XP claimed (${result.baseXpAwarded} XP + ${result.streakBonusAwarded} streak bonus).`;
+  }
+
+  return `${result.quest.title} complete. +${result.xpAwarded} XP claimed.`;
+}
+
+function formatPriority(priority) {
+  return priority.charAt(0).toUpperCase() + priority.slice(1);
 }
 
 function getRank(xp, completedCount, totalCount) {
@@ -113,16 +151,19 @@ function getRank(xp, completedCount, totalCount) {
 function createQuestBoardForFileOpen(initialQuests = []) {
   // Chrome blocks local ES module imports under file://, so direct-open mode
   // mirrors the quest-board module behavior used when served over HTTP.
+  const streakBonusXp = 10;
   const quests = initialQuests.map((quest) => ({
     id: quest.id,
     title: quest.title,
     xp: quest.xp,
+    priority: quest.priority ?? "normal",
     completed: Boolean(quest.completed),
   }));
   let totalXp = quests.reduce(
     (sum, quest) => sum + (quest.completed ? quest.xp : 0),
     0,
   );
+  let currentStreak = 0;
 
   return {
     listQuests() {
@@ -133,6 +174,10 @@ function createQuestBoardForFileOpen(initialQuests = []) {
       return totalXp;
     },
 
+    getCurrentStreak() {
+      return currentStreak;
+    },
+
     completeQuest(questId) {
       const quest = quests.find((candidate) => candidate.id === questId);
 
@@ -140,14 +185,26 @@ function createQuestBoardForFileOpen(initialQuests = []) {
         throw new Error(`Unknown quest: ${questId}`);
       }
 
-      const xpAwarded = quest.completed ? 0 : quest.xp;
-      quest.completed = true;
+      let baseXpAwarded = 0;
+      let streakBonusAwarded = 0;
+
+      if (!quest.completed) {
+        currentStreak += 1;
+        baseXpAwarded = quest.xp;
+        streakBonusAwarded = (currentStreak - 1) * streakBonusXp;
+        quest.completed = true;
+      }
+
+      const xpAwarded = baseXpAwarded + streakBonusAwarded;
       totalXp += xpAwarded;
 
       return {
         quest: copyQuest(quest),
+        baseXpAwarded,
+        streakBonusAwarded,
         xpAwarded,
         totalXp,
+        currentStreak,
       };
     },
   };
@@ -158,6 +215,7 @@ function copyQuest(quest) {
     id: quest.id,
     title: quest.title,
     xp: quest.xp,
+    priority: quest.priority,
     completed: quest.completed,
   };
 }
